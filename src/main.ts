@@ -55,9 +55,9 @@ export async function run() {
       let nodeDistribution = getNodejsDistribution(nodejsInfo);  // changed const to let so i can execute the below lines properly (an idea)
 
       if (resolveStable === true) {
-        version = await nodeDistribution.resolveStableVersionOfNode();
-        if (version) {
-          nodeDistribution = getNodejsDistribution({...nodejsInfo, versionSpec: version})
+        const updatedVersion = await nodeDistribution.resolveStableVersionOfNode(version);
+        if (updatedVersion !== null) {
+          nodeDistribution = getNodejsDistribution({...nodejsInfo, versionSpec: updatedVersion})
         }
         else {
           core.setFailed('The returned version value is null.');
