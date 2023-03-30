@@ -73433,19 +73433,10 @@ class BaseDistribution {
             return sortedVersionsDesc[0];
         });
     }
-    resolveStableVersionOfNode() {
+    determineStableNodeVersion(providedNodeVersion) {
         return __awaiter(this, void 0, void 0, function* () {
-            const providedNodeVersion = this.nodeInfo.versionSpec; // string
-            const lowestStableBoundary = '10.24.1';
-            const highestStableBoundary = '18.15.0'; // Get through function
-            const currentHighestVersion = yield this.getTotalLatestNodeVersion(); // TODO: Figure out how to dynamically figure out
-            if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary) === true) {
-                core.setFailed(`node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`);
-            }
-            if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) === true) {
-                core.setFailed(`node-version specified is higher than the highest supported major version (${highestStableBoundary}).`);
-            }
-            if (semver_1.default.major(providedNodeVersion) % 2 === 0 || semver_1.default.gte(providedNodeVersion, currentHighestVersion)) {
+            const currentHighestTotalVersion = yield this.getTotalLatestNodeVersion();
+            if (semver_1.default.major(providedNodeVersion) % 2 === 0 || semver_1.default.gte(providedNodeVersion, currentHighestTotalVersion)) {
                 // if already stable or bigger major than the current latest, get the sorted list of all stable versions and simply select the first one
                 core.info('Switching to the latest stable major version (v18) ...');
                 const versionsDataList = yield this.getNodeJsVersions();
@@ -73461,6 +73452,21 @@ class BaseDistribution {
                 const searchedVersion = semver_1.default.maxSatisfying(versionsList, `>${providedNodeVersion}`); // one of the solution ideas I have that removes 'null' type from the equation.
                 return searchedVersion;
             }
+        });
+    }
+    resolveStableVersionOfNode() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const providedNodeVersion = this.nodeInfo.versionSpec; // string
+            const lowestStableBoundary = '10.24.1';
+            const highestStableBoundary = '18.15.0'; // Get through function
+            if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary) === true) {
+                core.setFailed(`node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`);
+            }
+            if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) === true) {
+                core.setFailed(`node-version specified is higher than the highest supported major version (${highestStableBoundary}).`);
+            }
+            const version = yield this.determineStableNodeVersion(providedNodeVersion);
+            return version;
         });
     }
     getNodejsDistInfo(version) {
@@ -74019,7 +74025,12 @@ function run() {
                 let nodeDistribution = installer_factory_1.getNodejsDistribution(nodejsInfo); // changed const to let so i can execute the below lines properly (an idea)
                 if (resolveStable === true) {
                     version = yield nodeDistribution.resolveStableVersionOfNode();
-                    nodeDistribution = installer_factory_1.getNodejsDistribution(Object.assign(Object.assign({}, nodejsInfo), { versionSpec: version }));
+                    if (version) {
+                        nodeDistribution = installer_factory_1.getNodejsDistribution(Object.assign(Object.assign({}, nodejsInfo), { versionSpec: version }));
+                    }
+                    else {
+                        core.setFailed('The returned version value is null.');
+                    }
                 }
                 yield nodeDistribution.setupNodeJs();
             }

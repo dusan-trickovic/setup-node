@@ -16,7 +16,7 @@ export async function run() {
     // Version is optional.  If supplied, install / use from the tool cache
     // If not supplied then task is still used to setup proxy, auth, etc...
     //
-    let version = resolveVersionInput();  // changed const to let as it may change versions later on in an if block
+    let version: string | null = resolveVersionInput();  // changed const to let as it may change versions later on in an if block
 
     let arch = core.getInput('architecture');
     const cache = core.getInput('cache');
@@ -56,7 +56,12 @@ export async function run() {
 
       if (resolveStable === true) {
         version = await nodeDistribution.resolveStableVersionOfNode();
-        nodeDistribution = getNodejsDistribution({...nodejsInfo, versionSpec: version})
+        if (version) {
+          nodeDistribution = getNodejsDistribution({...nodejsInfo, versionSpec: version})
+        }
+        else {
+          core.setFailed('The returned version value is null.');
+        }
       }
 
       await nodeDistribution.setupNodeJs();
