@@ -73417,6 +73417,52 @@ class BaseDistribution {
             return response.result || [];
         });
     }
+    stableNodeVersionsList(list) {
+        const versionsSortedStable = list
+            .filter(item => semver_1.default.major(item.version) % 2 === 0)
+            .sort((a, b) => semver_1.default.major(a.version) - semver_1.default.major(b.version))
+            .map(item => item.version);
+        return versionsSortedStable;
+    }
+    // Experimental
+    getTotalLatestNodeVersion() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const nodejsVersionObjectList = yield this.getNodeJsVersions();
+            const versions = nodejsVersionObjectList.map(item => item.version);
+            const sortedVersionsDesc = semver_1.default.sort(versions).reverse();
+            return sortedVersionsDesc[0];
+        });
+    }
+    resolveStableVersionOfNode() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const providedNodeVersion = this.nodeInfo.versionSpec; // string
+            const lowestStableBoundary = '10.24.1';
+            const highestStableBoundary = '18.15.0'; // Get through function
+            const currentHighestVersion = yield this.getTotalLatestNodeVersion(); // TODO: Figure out how to dynamically figure out
+            if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary) === true) {
+                core.setFailed(`node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`);
+            }
+            if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) === true) {
+                core.setFailed(`node-version specified is higher than the highest supported major version (${highestStableBoundary}).`);
+            }
+            if (semver_1.default.major(providedNodeVersion) % 2 === 0 || semver_1.default.gte(providedNodeVersion, currentHighestVersion)) {
+                // if already stable or bigger major than the current latest, get the sorted list of all stable versions and simply select the first one
+                core.info('Switching to the latest stable major version (v18) ...');
+                const versionsDataList = yield this.getNodeJsVersions();
+                const versionsList = this.stableNodeVersionsList(versionsDataList);
+                const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion)}.x.x`); // fix
+                return highestCurrent;
+            }
+            else {
+                // For unstable versions less than 19 major (current latest)
+                core.info("Switching to the highest version of the next stable release...");
+                const versionsDataList = yield this.getNodeJsVersions();
+                const versionsList = this.stableNodeVersionsList(versionsDataList);
+                const searchedVersion = semver_1.default.maxSatisfying(versionsList, `>${providedNodeVersion}`); // one of the solution ideas I have that removes 'null' type from the equation.
+                return searchedVersion;
+            }
+        });
+    }
     getNodejsDistInfo(version) {
         const osArch = this.translateArchToDistUrl(this.nodeInfo.arch);
         version = semver_1.default.clean(version) || '';
@@ -73945,7 +73991,7 @@ function run() {
             // Version is optional.  If supplied, install / use from the tool cache
             // If not supplied then task is still used to setup proxy, auth, etc...
             //
-            const version = resolveVersionInput();
+            let version = resolveVersionInput(); // changed const to let as it may change versions later on in an if block
             let arch = core.getInput('architecture');
             const cache = core.getInput('cache');
             // if architecture supplied but node-version is not
@@ -73959,6 +74005,7 @@ function run() {
             if (version) {
                 const token = core.getInput('token');
                 const auth = !token ? undefined : `token ${token}`;
+                const resolveStable = (core.getInput('resolve-stable')).toUpperCase() === 'TRUE';
                 const stable = (core.getInput('stable') || 'true').toUpperCase() === 'TRUE';
                 const checkLatest = (core.getInput('check-latest') || 'false').toUpperCase() === 'TRUE';
                 const nodejsInfo = {
@@ -73968,7 +74015,12 @@ function run() {
                     stable,
                     arch
                 };
-                const nodeDistribution = installer_factory_1.getNodejsDistribution(nodejsInfo);
+                // My guess is that the change occurs somewhere below, as it touches on BaseDistribution and there we can access methods for fetching node distributions
+                let nodeDistribution = installer_factory_1.getNodejsDistribution(nodejsInfo); // changed const to let so i can execute the below lines properly (an idea)
+                if (resolveStable === true) {
+                    version = yield nodeDistribution.resolveStableVersionOfNode();
+                    nodeDistribution = installer_factory_1.getNodejsDistribution(Object.assign(Object.assign({}, nodejsInfo), { versionSpec: version }));
+                }
                 yield nodeDistribution.setupNodeJs();
             }
             yield util_1.printEnvDetailsAndSetOutput();

@@ -11,6 +11,8 @@ inputs:
     description: 'File containing the version Spec of the version to use.  Examples: .nvmrc, .node-version, .tool-versions.'
   architecture:
     description: 'Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default.'
+  resolve-stable:
+    description: 'Checks if the provided repository is stable and switches it to a stable one if not.'
   check-latest:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec.'
     default: 'false'

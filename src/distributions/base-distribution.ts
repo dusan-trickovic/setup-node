@@ -99,6 +99,58 @@ export default abstract class BaseDistribution {
     return response.result || [];
   }
 
+  private stableNodeVersionsList(list: INodeVersion[]): string[] {
+    const versionsSortedStable = list
+      .filter(item => semver.major(item.version) % 2 === 0)
+      .sort((a,b) => semver.major(a.version) - semver.major(b.version))
+      .map(item => item.version);
+    return versionsSortedStable;
+  }
+
+  // Experimental
+  private async getTotalLatestNodeVersion(): Promise<string> {
+    const nodejsVersionObjectList = await this.getNodeJsVersions();
+    const versions = nodejsVersionObjectList.map(item => item.version);
+    const sortedVersionsDesc = semver.sort(versions).reverse();
+
+    return sortedVersionsDesc[0];
+  }
+
+  async resolveStableVersionOfNode(): Promise<string> {
+    const providedNodeVersion = this.nodeInfo.versionSpec;  // string
+    const lowestStableBoundary = '10.24.1';
+    const highestStableBoundary = '18.15.0';  // Get through function
+    const currentHighestVersion = await this.getTotalLatestNodeVersion();     // TODO: Figure out how to dynamically figure out
+    
+    if(semver.lt(providedNodeVersion, lowestStableBoundary) === true) {
+      core.setFailed(`node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`);
+    }
+  
+    if (semver.gt(providedNodeVersion, highestStableBoundary) === true) {
+      core.setFailed(`node-version specified is higher than the highest supported major version (${highestStableBoundary}).`);
+    }
+  
+    if (semver.major(providedNodeVersion) % 2 === 0 || semver.gte(providedNodeVersion, currentHighestVersion)) {
+      // if already stable or bigger major than the current latest, get the sorted list of all stable versions and simply select the first one
+      core.info('Switching to the latest stable major version (v18) ...');
+      const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
+      const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
+      const highestCurrent = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)}.x.x`) as string; // fix
+
+      return highestCurrent;
+    }
+    else {
+      // For unstable versions less than 19 major (current latest)
+      core.info("Switching to the highest version of the next stable release...");
+      const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
+      const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
+      const searchedVersion = semver.maxSatisfying(versionsList, `>${providedNodeVersion}`) as string;  // one of the solution ideas I have that removes 'null' type from the equation.
+      
+      return searchedVersion;
+    }
+  
+  }
+
   protected getNodejsDistInfo(version: string) {
     const osArch: string = this.translateArchToDistUrl(this.nodeInfo.arch);
     version = semver.clean(version) || '';

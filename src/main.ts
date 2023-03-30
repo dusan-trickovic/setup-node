@@ -16,7 +16,7 @@ export async function run() {
     // Version is optional.  If supplied, install / use from the tool cache
     // If not supplied then task is still used to setup proxy, auth, etc...
     //
-    const version = resolveVersionInput();
+    let version = resolveVersionInput();  // changed const to let as it may change versions later on in an if block
 
     let arch = core.getInput('architecture');
     const cache = core.getInput('cache');
@@ -34,10 +34,12 @@ export async function run() {
     }
 
     if (version) {
+
       const token = core.getInput('token');
       const auth = !token ? undefined : `token ${token}`;
+      const resolveStable = (core.getInput('resolve-stable')).toUpperCase() === 'TRUE';
       const stable =
-        (core.getInput('stable') || 'true').toUpperCase() === 'TRUE';
+        (core.getInput('stable') || 'true').toUpperCase() === 'TRUE'; 
       const checkLatest =
         (core.getInput('check-latest') || 'false').toUpperCase() === 'TRUE';
       const nodejsInfo = {
@@ -47,7 +49,16 @@ export async function run() {
         stable,
         arch
       };
-      const nodeDistribution = getNodejsDistribution(nodejsInfo);
+
+      // My guess is that the change occurs somewhere below, as it touches on BaseDistribution and there we can access methods for fetching node distributions
+
+      let nodeDistribution = getNodejsDistribution(nodejsInfo);  // changed const to let so i can execute the below lines properly (an idea)
+
+      if (resolveStable === true) {
+        version = await nodeDistribution.resolveStableVersionOfNode();
+        nodeDistribution = getNodejsDistribution({...nodejsInfo, versionSpec: version})
+      }
+
       await nodeDistribution.setupNodeJs();
     }
 
@@ -76,6 +87,7 @@ export async function run() {
     core.setFailed(err.message);
   }
 }
+
 
 function resolveVersionInput(): string {
   let version = core.getInput('node-version');
