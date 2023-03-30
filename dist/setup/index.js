@@ -73435,25 +73435,25 @@ class BaseDistribution {
     }
     determineStableNodeVersion(providedNodeVersion) {
         return __awaiter(this, void 0, void 0, function* () {
-            const currentHighestTotalVersion = yield this.getTotalLatestNodeVersion();
             const versionsDataList = yield this.getNodeJsVersions();
             const versionsList = this.stableNodeVersionsList(versionsDataList);
-            if (semver_1.default.major(providedNodeVersion) % 2 === 0 || semver_1.default.gte(providedNodeVersion, currentHighestTotalVersion)) {
-                core.info('Switching to the latest stable major version (v18) ...');
+            if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
+                core.info(`Switching to the latest stable major version... (${versionsList[0]})`);
                 const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
                 return highestCurrent;
             }
             else {
                 core.info("Switching to the highest version of the next stable release...");
-                const searchedVersion = semver_1.default.maxSatisfying(versionsList, `^${providedNodeVersion + 1}.x.x`); // TODO: Inspect the range
+                const searchedVersion = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion) + 1}.x.x`); // TODO: Inspect the range
                 return searchedVersion;
             }
         });
     }
     resolveStableVersionOfNode(providedNodeVersion) {
         return __awaiter(this, void 0, void 0, function* () {
+            const versionsDataList = yield this.getNodeJsVersions();
             const lowestStableBoundary = '10.24.1';
-            const highestStableBoundary = '18.15.0'; // TODO: Get through function
+            const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0]; // TODO: Get through function
             if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary) === true) {
                 core.setFailed(`node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`);
             }

@@ -117,27 +117,27 @@ export default abstract class BaseDistribution {
   }
 
   private async determineStableNodeVersion(providedNodeVersion: string): Promise<string | null> {
-    const currentHighestTotalVersion = await this.getTotalLatestNodeVersion();
     const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
     const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
 
-    if (semver.major(providedNodeVersion) % 2 === 0 || semver.gte(providedNodeVersion, currentHighestTotalVersion)) {
-      core.info('Switching to the latest stable major version (v18) ...');    
+    if (semver.major(providedNodeVersion) % 2 === 0) {
+      core.info(`Switching to the latest stable major version... (${versionsList[0]})`);    
       const highestCurrent = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
 
       return highestCurrent;
     }
     else {
       core.info("Switching to the highest version of the next stable release...");
-      const searchedVersion = semver.maxSatisfying(versionsList, `^${providedNodeVersion+1}.x.x`);  // TODO: Inspect the range
+      const searchedVersion = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)+1}.x.x`);  // TODO: Inspect the range
       
       return searchedVersion;
     }
   }
 
   async resolveStableVersionOfNode(providedNodeVersion: string): Promise<string | null> {
+    const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
     const lowestStableBoundary = '10.24.1';
-    const highestStableBoundary = '18.15.0';  // TODO: Get through function
+    const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0]  // TODO: Get through function
     
     if(semver.lt(providedNodeVersion, lowestStableBoundary) === true) {
       core.setFailed(`node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`);
