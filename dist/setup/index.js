@@ -73418,11 +73418,11 @@ class BaseDistribution {
         });
     }
     stableNodeVersionsList(list) {
-        const versionsSortedStable = list
+        const stableVersions = list
             .filter(item => semver_1.default.major(item.version) % 2 === 0)
-            .sort((a, b) => semver_1.default.major(a.version) - semver_1.default.major(b.version))
             .map(item => item.version);
-        return versionsSortedStable;
+        const versionsSorted = semver_1.default.sort(stableVersions).reverse();
+        return versionsSorted;
     }
     // Experimental
     getTotalLatestNodeVersion() {

@@ -100,11 +100,11 @@ export default abstract class BaseDistribution {
   }
 
   private stableNodeVersionsList(list: INodeVersion[]): string[] {
-    const versionsSortedStable = list
+    const stableVersions = list
       .filter(item => semver.major(item.version) % 2 === 0)
-      .sort((a,b) => semver.major(a.version) - semver.major(b.version))
       .map(item => item.version);
-    return versionsSortedStable;
+    const versionsSorted = semver.sort(stableVersions).reverse();
+    return versionsSorted;
   }
 
   // Experimental
