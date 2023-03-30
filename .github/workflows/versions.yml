@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup Node
-        uses: dusan-trickovic/setup-node@test/resolve-stable
+        uses: ./
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
