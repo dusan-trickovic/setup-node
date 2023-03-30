@@ -121,8 +121,8 @@ export default abstract class BaseDistribution {
     const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
 
     if (semver.major(providedNodeVersion) % 2 === 0) {
-      core.info(`Switching to the latest stable major version... (${versionsList[0]})`);    
       const highestCurrent = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
+      core.info(`Switching to the latest stable major version... (${highestCurrent})`);    
 
       return highestCurrent;
     }
@@ -138,13 +138,19 @@ export default abstract class BaseDistribution {
     const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
     const lowestStableBoundary = '10.24.1';
     const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0]  // TODO: Get through function
+    let errorMessage: string;
     
     if(semver.lt(providedNodeVersion, lowestStableBoundary) === true) {
-      core.setFailed(`node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`);
+      errorMessage = `node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`;
+
+      core.setFailed(errorMessage);
+      throw new Error(errorMessage);
     }
   
     if (semver.gt(providedNodeVersion, highestStableBoundary) === true) {
-      core.setFailed(`node-version specified is higher than the highest supported major version (${highestStableBoundary}).`);
+      errorMessage = `node-version specified is higher than the highest supported major version (${highestStableBoundary}).`;
+      core.setFailed(errorMessage);
+      throw new Error(errorMessage);
     }
   
     const version = await this.determineStableNodeVersion(providedNodeVersion);

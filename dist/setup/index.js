@@ -73438,8 +73438,8 @@ class BaseDistribution {
             const versionsDataList = yield this.getNodeJsVersions();
             const versionsList = this.stableNodeVersionsList(versionsDataList);
             if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
-                core.info(`Switching to the latest stable major version... (${versionsList[0]})`);
                 const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
+                core.info(`Switching to the latest stable major version... (${highestCurrent})`);
                 return highestCurrent;
             }
             else {
@@ -73454,11 +73454,16 @@ class BaseDistribution {
             const versionsDataList = yield this.getNodeJsVersions();
             const lowestStableBoundary = '10.24.1';
             const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0]; // TODO: Get through function
+            let errorMessage;
             if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary) === true) {
-                core.setFailed(`node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`);
+                errorMessage = `node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`;
+                core.setFailed(errorMessage);
+                throw new Error(errorMessage);
             }
             if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) === true) {
-                core.setFailed(`node-version specified is higher than the highest supported major version (${highestStableBoundary}).`);
+                errorMessage = `node-version specified is higher than the highest supported major version (${highestStableBoundary}).`;
+                core.setFailed(errorMessage);
+                throw new Error(errorMessage);
             }
             const version = yield this.determineStableNodeVersion(providedNodeVersion);
             return version;
