@@ -73443,8 +73443,8 @@ class BaseDistribution {
                 return highestCurrent;
             }
             else {
-                core.info("Switching to the highest version of the next stable release...");
                 const searchedVersion = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion) + 1}.x.x`); // TODO: Inspect the range
+                core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
                 return searchedVersion;
             }
         });
@@ -73459,12 +73459,10 @@ class BaseDistribution {
             if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary)) {
                 errorMessage = `node-version specified is lower than the lowest supported stable version (${lowestStableBoundary}).`;
                 core.setFailed(errorMessage);
-                throw new Error(errorMessage);
             }
-            if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) || semver_1.default.gt(providedNodeVersion, highestTotalNodeVersion)) {
+            if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) || semver_1.default.gte(providedNodeVersion, highestTotalNodeVersion)) {
                 errorMessage = `node-version specified is higher than the highest supported stable version (${highestStableBoundary}) or total version (${highestTotalNodeVersion}).`;
                 core.setFailed(errorMessage);
-                throw new Error(errorMessage);
             }
             const version = yield this.determineStableNodeVersion(providedNodeVersion);
             return version;

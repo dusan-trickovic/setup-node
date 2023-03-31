@@ -127,8 +127,8 @@ export default abstract class BaseDistribution {
       return highestCurrent;
     }
     else {
-      core.info("Switching to the highest version of the next stable release...");
       const searchedVersion = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)+1}.x.x`);  // TODO: Inspect the range
+      core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
       
       return searchedVersion;
     }
@@ -145,14 +145,12 @@ export default abstract class BaseDistribution {
       errorMessage = `node-version specified is lower than the lowest supported stable version (${lowestStableBoundary}).`;
 
       core.setFailed(errorMessage);
-      throw new Error(errorMessage);
     }
   
-    if (semver.gt(providedNodeVersion, highestStableBoundary) || semver.gt(providedNodeVersion, highestTotalNodeVersion)) {
+    if (semver.gt(providedNodeVersion, highestStableBoundary) || semver.gte(providedNodeVersion, highestTotalNodeVersion)) {
       errorMessage = `node-version specified is higher than the highest supported stable version (${highestStableBoundary}) or total version (${highestTotalNodeVersion}).`;
 
       core.setFailed(errorMessage);
-      throw new Error(errorMessage);
     }
   
     const version = await this.determineStableNodeVersion(providedNodeVersion);
