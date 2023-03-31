@@ -73439,7 +73439,7 @@ class BaseDistribution {
                 const versionsDataList = yield this.getNodeJsVersions();
                 const versionsList = this.stableNodeVersionsList(versionsDataList);
                 if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
-                    const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${providedNodeVersion}`); // TODO: Inspect the range
+                    const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
                     core.info(`Switching to the latest stable major version... (${highestCurrent})`);
                     return highestCurrent;
                 }

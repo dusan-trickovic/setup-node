@@ -118,25 +118,25 @@ export default abstract class BaseDistribution {
 
   private async determineStableNodeVersion(providedNodeVersion: string): Promise<string | null> {
     try {
-    const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
-    const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
+      const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
+      const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
 
-    if (semver.major(providedNodeVersion) % 2 === 0) {
-      const highestCurrent = semver.maxSatisfying(versionsList, `^${providedNodeVersion}`); // TODO: Inspect the range
-      core.info(`Switching to the latest stable major version... (${highestCurrent})`);    
+      if (semver.major(providedNodeVersion) % 2 === 0) {
+        const highestCurrent = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
+        core.info(`Switching to the latest stable major version... (${highestCurrent})`);    
 
-      return highestCurrent;
-    }
-    else {
-      const searchedVersion = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)+1}.x.x`);  // TODO: Inspect the range
-      core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
+        return highestCurrent;
+      }
+      else {
+        const searchedVersion = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)+1}.x.x`);  // TODO: Inspect the range
+        core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
       
-      return searchedVersion;
+        return searchedVersion;
+      }
+    } catch (err) {
+      core.error(err.message);
+      throw new Error(err.message);
     }
-  } catch (err) {
-    core.error(err.message);
-    throw new Error(err.message);
-  }
   }
 
   async resolveStableVersionOfNode(providedNodeVersion: string): Promise<string | null> {
