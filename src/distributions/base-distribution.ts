@@ -137,18 +137,20 @@ export default abstract class BaseDistribution {
   async resolveStableVersionOfNode(providedNodeVersion: string): Promise<string | null> {
     const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
     const lowestStableBoundary = '10.24.1';
-    const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0]  // TODO: Get through function
+    const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0];
+    const highestTotalNodeVersion = await this.getTotalLatestNodeVersion();
     let errorMessage: string;
     
-    if(semver.lt(providedNodeVersion, lowestStableBoundary) === true) {
-      errorMessage = `node-version specified is lower than the lowest supported major version (${lowestStableBoundary}).`;
+    if(semver.lt(providedNodeVersion, lowestStableBoundary)) {
+      errorMessage = `node-version specified is lower than the lowest supported stable version (${lowestStableBoundary}).`;
 
       core.setFailed(errorMessage);
       throw new Error(errorMessage);
     }
   
-    if (semver.gt(providedNodeVersion, highestStableBoundary) === true) {
-      errorMessage = `node-version specified is higher than the highest supported major version (${highestStableBoundary}).`;
+    if (semver.gt(providedNodeVersion, highestStableBoundary) || semver.gt(providedNodeVersion, highestTotalNodeVersion)) {
+      errorMessage = `node-version specified is higher than the highest supported stable version (${highestStableBoundary}) or total version (${highestTotalNodeVersion}).`;
+
       core.setFailed(errorMessage);
       throw new Error(errorMessage);
     }
