@@ -121,7 +121,7 @@ export default abstract class BaseDistribution {
     const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
 
     if (semver.major(providedNodeVersion) % 2 === 0) {
-      const highestCurrent = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
+      const highestCurrent = semver.maxSatisfying(versionsList, `^${providedNodeVersion}`); // TODO: Inspect the range
       core.info(`Switching to the latest stable major version... (${highestCurrent})`);    
 
       return highestCurrent;

@@ -73438,7 +73438,7 @@ class BaseDistribution {
             const versionsDataList = yield this.getNodeJsVersions();
             const versionsList = this.stableNodeVersionsList(versionsDataList);
             if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
-                const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
+                const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${providedNodeVersion}`); // TODO: Inspect the range
                 core.info(`Switching to the latest stable major version... (${highestCurrent})`);
                 return highestCurrent;
             }
@@ -73996,7 +73996,7 @@ function run() {
             // Version is optional.  If supplied, install / use from the tool cache
             // If not supplied then task is still used to setup proxy, auth, etc...
             //
-            let version = resolveVersionInput(); // changed const to let as it may change versions later on in an if block
+            const version = resolveVersionInput(); // changed const to let as it may change versions later on in an if block
             let arch = core.getInput('architecture');
             const cache = core.getInput('cache');
             // if architecture supplied but node-version is not

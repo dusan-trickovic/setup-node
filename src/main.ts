@@ -16,7 +16,7 @@ export async function run() {
     // Version is optional.  If supplied, install / use from the tool cache
     // If not supplied then task is still used to setup proxy, auth, etc...
     //
-    let version: string | null = resolveVersionInput();  // changed const to let as it may change versions later on in an if block
+    const version: string = resolveVersionInput();  // changed const to let as it may change versions later on in an if block
 
     let arch = core.getInput('architecture');
     const cache = core.getInput('cache');
