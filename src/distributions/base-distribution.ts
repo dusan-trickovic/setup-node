@@ -117,6 +117,7 @@ export default abstract class BaseDistribution {
   }
 
   private async determineStableNodeVersion(providedNodeVersion: string): Promise<string | null> {
+    try {
     const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
     const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
 
@@ -132,6 +133,10 @@ export default abstract class BaseDistribution {
       
       return searchedVersion;
     }
+  } catch (err) {
+    core.error(err.message);
+    throw new Error(err.message);
+  }
   }
 
   async resolveStableVersionOfNode(providedNodeVersion: string): Promise<string | null> {

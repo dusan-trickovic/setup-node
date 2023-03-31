@@ -73435,17 +73435,23 @@ class BaseDistribution {
     }
     determineStableNodeVersion(providedNodeVersion) {
         return __awaiter(this, void 0, void 0, function* () {
-            const versionsDataList = yield this.getNodeJsVersions();
-            const versionsList = this.stableNodeVersionsList(versionsDataList);
-            if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
-                const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${providedNodeVersion}`); // TODO: Inspect the range
-                core.info(`Switching to the latest stable major version... (${highestCurrent})`);
-                return highestCurrent;
+            try {
+                const versionsDataList = yield this.getNodeJsVersions();
+                const versionsList = this.stableNodeVersionsList(versionsDataList);
+                if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
+                    const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${providedNodeVersion}`); // TODO: Inspect the range
+                    core.info(`Switching to the latest stable major version... (${highestCurrent})`);
+                    return highestCurrent;
+                }
+                else {
+                    const searchedVersion = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion) + 1}.x.x`); // TODO: Inspect the range
+                    core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
+                    return searchedVersion;
+                }
             }
-            else {
-                const searchedVersion = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion) + 1}.x.x`); // TODO: Inspect the range
-                core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
-                return searchedVersion;
+            catch (err) {
+                core.error(err.message);
+                throw new Error(err.message);
             }
         });
     }
@@ -74020,8 +74026,7 @@ function run() {
                     stable,
                     arch
                 };
-                // My guess is that the change occurs somewhere below, as it touches on BaseDistribution and there we can access methods for fetching node distributions
-                let nodeDistribution = installer_factory_1.getNodejsDistribution(nodejsInfo); // changed const to let so i can execute the below lines properly (an idea)
+                let nodeDistribution = installer_factory_1.getNodejsDistribution(nodejsInfo);
                 if (resolveStable === true) {
                     const updatedVersion = yield nodeDistribution.resolveStableVersionOfNode(version);
                     if (updatedVersion !== null) {

@@ -50,9 +50,7 @@ export async function run() {
         arch
       };
 
-      // My guess is that the change occurs somewhere below, as it touches on BaseDistribution and there we can access methods for fetching node distributions
-
-      let nodeDistribution = getNodejsDistribution(nodejsInfo);  // changed const to let so i can execute the below lines properly (an idea)
+      let nodeDistribution = getNodejsDistribution(nodejsInfo);
 
       if (resolveStable === true) {
         const updatedVersion = await nodeDistribution.resolveStableVersionOfNode(version);
