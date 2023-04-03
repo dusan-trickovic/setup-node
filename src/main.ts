@@ -54,11 +54,11 @@ export async function run() {
 
       if (resolveStable === true) {
         const updatedVersion = await nodeDistribution.resolveStableVersionOfNode(version);
-        if (updatedVersion !== null) {
+        if (updatedVersion) {
           nodeDistribution = getNodejsDistribution({...nodejsInfo, versionSpec: updatedVersion})
         }
         else {
-          core.setFailed('The returned version value is null.');
+          core.setFailed('The returned version value is undefined.');
         }
       }
 

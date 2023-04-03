@@ -73435,23 +73435,17 @@ class BaseDistribution {
     }
     determineStableNodeVersion(providedNodeVersion) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const versionsDataList = yield this.getNodeJsVersions();
-                const versionsList = this.stableNodeVersionsList(versionsDataList);
-                if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
-                    const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion)}.x.x`); // TODO: Inspect the range
-                    core.info(`Switching to the latest stable major version... (${highestCurrent})`);
-                    return highestCurrent;
-                }
-                else {
-                    const searchedVersion = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion) + 1}.x.x`); // TODO: Inspect the range
-                    core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
-                    return searchedVersion;
-                }
+            const versionsDataList = yield this.getNodeJsVersions();
+            const versionsList = this.stableNodeVersionsList(versionsDataList);
+            if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
+                const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion)}.x.x`);
+                core.info(`Switching to the latest stable major version... (${highestCurrent})`);
+                return highestCurrent;
             }
-            catch (err) {
-                core.error(err.message);
-                throw new Error(err.message);
+            else {
+                const searchedVersion = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion) + 1}.x.x`);
+                core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
+                return searchedVersion;
             }
         });
     }
@@ -73462,16 +73456,21 @@ class BaseDistribution {
             const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0];
             const highestTotalNodeVersion = yield this.getTotalLatestNodeVersion();
             let errorMessage;
-            if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary)) {
-                errorMessage = `node-version specified is lower than the lowest supported stable version (${lowestStableBoundary}).`;
-                core.setFailed(errorMessage);
+            if (providedNodeVersion) {
+                if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary)) {
+                    errorMessage = `node-version specified is lower than the lowest supported stable version (${lowestStableBoundary}).`;
+                    core.setFailed(errorMessage);
+                }
+                if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) || semver_1.default.gte(providedNodeVersion, highestTotalNodeVersion)) {
+                    errorMessage = `node-version specified is higher than the highest supported stable version (${highestStableBoundary}) or total version (${highestTotalNodeVersion}).`;
+                    core.setFailed(errorMessage);
+                }
+                const version = yield this.determineStableNodeVersion(providedNodeVersion);
+                return version;
             }
-            if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) || semver_1.default.gte(providedNodeVersion, highestTotalNodeVersion)) {
-                errorMessage = `node-version specified is higher than the highest supported stable version (${highestStableBoundary}) or total version (${highestTotalNodeVersion}).`;
-                core.setFailed(errorMessage);
-            }
-            const version = yield this.determineStableNodeVersion(providedNodeVersion);
-            return version;
+            errorMessage = 'No Node version provided';
+            core.setFailed(errorMessage);
+            throw new Error(errorMessage);
         });
     }
     getNodejsDistInfo(version) {
@@ -74029,11 +74028,11 @@ function run() {
                 let nodeDistribution = installer_factory_1.getNodejsDistribution(nodejsInfo);
                 if (resolveStable === true) {
                     const updatedVersion = yield nodeDistribution.resolveStableVersionOfNode(version);
-                    if (updatedVersion !== null) {
+                    if (updatedVersion) {
                         nodeDistribution = installer_factory_1.getNodejsDistribution(Object.assign(Object.assign({}, nodejsInfo), { versionSpec: updatedVersion }));
                     }
                     else {
-                        core.setFailed('The returned version value is null.');
+                        core.setFailed('The returned version value is undefined.');
                     }
                 }
                 yield nodeDistribution.setupNodeJs();
