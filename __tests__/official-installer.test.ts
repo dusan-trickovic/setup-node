@@ -175,6 +175,7 @@ describe('setup-node', () => {
 
   it('finds version in cache with stable true', async () => {
     inputs['node-version'] = '12';
+    inputs['resolve-stable'] = 'false';
     inputs.stable = 'true';
 
     const toolPath = path.normalize('/cache/node/12.16.1/x64');
@@ -186,6 +187,7 @@ describe('setup-node', () => {
 
   it('finds version in cache with stable not supplied', async () => {
     inputs['node-version'] = '12';
+    inputs['resolve-stable'] = 'false';
 
     inSpy.mockImplementation(name => inputs[name]);
 
@@ -198,6 +200,7 @@ describe('setup-node', () => {
 
   it('finds version in cache and adds it to the path', async () => {
     inputs['node-version'] = '12';
+    inputs['resolve-stable'] = 'false';
 
     inSpy.mockImplementation(name => inputs[name]);
 
@@ -212,6 +215,7 @@ describe('setup-node', () => {
   it('handles unhandled find error and reports error', async () => {
     const errMsg = 'unhandled error message';
     inputs['node-version'] = '12';
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => {
       throw new Error(errMsg);
@@ -237,6 +241,7 @@ describe('setup-node', () => {
     inputs['node-version'] = versionSpec;
     inputs['always-auth'] = false;
     inputs['token'] = 'faketoken';
+    inputs['resolve-stable'] = 'false';
 
     const expectedUrl =
       'https://github.com/actions/node-versions/releases/download/12.16.2-20200507.95/node-12.16.2-linux-x64.tar.gz';
@@ -289,6 +294,7 @@ describe('setup-node', () => {
     inputs['node-version'] = versionSpec;
     inputs['always-auth'] = false;
     inputs['token'] = 'faketoken';
+    inputs['resolve-stable'] = 'false';
 
     // ... but not in the local cache
     findSpy.mockImplementation(() => '');
@@ -320,6 +326,7 @@ describe('setup-node', () => {
 
     const versionSpec = '9.99.9';
     inputs['node-version'] = versionSpec;
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => '');
     await main.run();
@@ -347,6 +354,7 @@ describe('setup-node', () => {
     inputs['node-version'] = versionSpec;
     inputs['always-auth'] = false;
     inputs['token'] = 'faketoken';
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => '');
     dlSpy.mockImplementation(() => {
@@ -375,6 +383,7 @@ describe('setup-node', () => {
       inputs['architecture'] = arch;
       inputs['always-auth'] = false;
       inputs['token'] = 'faketoken';
+      inputs['resolve-stable'] = 'false';
 
       const expectedUrl =
         arch === 'x64'
@@ -404,6 +413,7 @@ describe('setup-node', () => {
 
       inputs['node-version'] = '12';
       inputs['check-latest'] = 'false';
+      inputs['resolve-stable'] = 'false';
 
       const toolPath = path.normalize('/cache/node/12.16.1/x64');
       findSpy.mockReturnValue(toolPath);
@@ -425,6 +435,7 @@ describe('setup-node', () => {
 
       inputs['node-version'] = '12';
       inputs['check-latest'] = 'true';
+      inputs['resolve-stable'] = 'false';
 
       const toolPath = path.normalize('/cache/node/12.16.2/x64');
       findSpy.mockReturnValue(toolPath);
@@ -451,6 +462,7 @@ describe('setup-node', () => {
 
       inputs['node-version'] = '12';
       inputs['check-latest'] = 'true';
+      inputs['resolve-stable'] = 'false';
 
       findSpy.mockImplementation(() => '');
       dlSpy.mockImplementation(async () => '/some/temp/path');
@@ -487,6 +499,7 @@ describe('setup-node', () => {
       inputs['check-latest'] = 'true';
       inputs['always-auth'] = false;
       inputs['token'] = 'faketoken';
+      inputs['resolve-stable'] = 'false';
 
       // ... but not in the local cache
       findSpy.mockImplementation(() => '');
@@ -529,6 +542,7 @@ describe('setup-node', () => {
       inputs['check-latest'] = 'true';
       inputs['always-auth'] = false;
       inputs['token'] = 'faketoken';
+      inputs['resolve-stable'] = 'false';
 
       // ... but not in the local cache
       findSpy.mockImplementation(() => '');
@@ -579,6 +593,7 @@ describe('setup-node', () => {
       async (lts, expectedVersion) => {
         // arrange
         inputs['node-version'] = `lts/${lts}`;
+        inputs['resolve-stable'] = 'false';
 
         const toolPath = path.normalize(`/cache/node/${expectedVersion}/x64`);
         findSpy.mockReturnValue(toolPath);
@@ -628,6 +643,7 @@ describe('setup-node', () => {
       async (lts, expectedVersion, expectedUrl) => {
         // arrange
         inputs['node-version'] = `lts/${lts}`;
+        inputs['resolve-stable'] = 'false';
 
         const toolPath = path.normalize(`/cache/node/${expectedVersion}/x64`);
         findSpy.mockImplementation(() => '');
@@ -670,6 +686,7 @@ describe('setup-node', () => {
     it('fail with unable to parse LTS alias (lts/)', async () => {
       // arrange
       inputs['node-version'] = 'lts/';
+      inputs['resolve-stable'] = 'false';
 
       findSpy.mockImplementation(() => '');
 
@@ -691,6 +708,7 @@ describe('setup-node', () => {
     it('fail to find LTS version (lts/unknown)', async () => {
       // arrange
       inputs['node-version'] = 'lts/unknown';
+      inputs['resolve-stable'] = 'false';
 
       findSpy.mockImplementation(() => '');
 
@@ -715,6 +733,7 @@ describe('setup-node', () => {
     it('fail if manifest is not available', async () => {
       // arrange
       inputs['node-version'] = 'lts/erbium';
+      inputs['resolve-stable'] = 'false';
 
       // ... but not in the local cache
       findSpy.mockImplementation(() => '');
@@ -744,6 +763,7 @@ describe('setup-node', () => {
       async inputVersion => {
         // Arrange
         inputs['node-version'] = inputVersion;
+        inputs['resolve-stable'] = 'false';
 
         os.platform = 'darwin';
         os.arch = 'x64';
@@ -770,6 +790,7 @@ describe('setup-node', () => {
       async inputVersion => {
         // Arrange
         inputs['node-version'] = inputVersion;
+        inputs['resolve-stable'] = 'false';
         const expectedVersion = nodeTestDist[0];
 
         os.platform = 'darwin';

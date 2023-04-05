@@ -240,6 +240,7 @@ describe('main tests', () => {
       const versionFile = '.nvmrc';
       const versionFilePath = path.join(__dirname, '..', versionFile);
       inputs['node-version-file'] = versionFile;
+      inputs['resolve-stable'] = 'false';
 
       inSpy.mockImplementation(name => inputs[name]);
       existsSpy.mockImplementationOnce(
@@ -262,6 +263,7 @@ describe('main tests', () => {
   describe('cache on GHES', () => {
     it('Should throw an error, because cache is not supported', async () => {
       inputs['node-version'] = '12';
+      inputs['resolve-stable'] = 'false';
       inputs['cache'] = 'npm';
 
       inSpy.mockImplementation(name => inputs[name]);
@@ -282,6 +284,7 @@ describe('main tests', () => {
 
     it('Should throw an internal error', async () => {
       inputs['node-version'] = '12';
+      inputs['resolve-stable'] = 'false';
       inputs['cache'] = 'npm';
 
       inSpy.mockImplementation(name => inputs[name]);

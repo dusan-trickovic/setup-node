@@ -140,6 +140,7 @@ describe('setup-node', () => {
 
   it('finds version in cache with stable true', async () => {
     inputs['node-version'] = '12.0.0-rc.1';
+    inputs['resolve-stable'] = 'false';
     inputs.stable = 'true';
 
     const toolPath = path.normalize('/cache/node/12.0.0-rc.1/x64');
@@ -151,6 +152,7 @@ describe('setup-node', () => {
 
   it('finds version in cache with stable not supplied', async () => {
     inputs['node-version'] = '12.0.0-rc.1';
+    inputs['resolve-stable'] = 'false';
 
     inSpy.mockImplementation(name => inputs[name]);
 
@@ -163,6 +165,7 @@ describe('setup-node', () => {
 
   it('finds version in cache and adds it to the path', async () => {
     inputs['node-version'] = '12.0.0-rc.1';
+    inputs['resolve-stable'] = 'false';
 
     inSpy.mockImplementation(name => inputs[name]);
 
@@ -177,6 +180,7 @@ describe('setup-node', () => {
   it('handles unhandled find error and reports error', async () => {
     const errMsg = 'unhandled error message';
     inputs['node-version'] = '12.0.0-rc.1';
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => {
       throw new Error(errMsg);
@@ -196,6 +200,7 @@ describe('setup-node', () => {
     inputs['node-version'] = versionSpec;
     inputs['always-auth'] = false;
     inputs['token'] = 'faketoken';
+    inputs['resolve-stable'] = 'false';
 
     // ... but not in the local cache
     findSpy.mockImplementation(() => '');
@@ -222,6 +227,7 @@ describe('setup-node', () => {
 
     const versionSpec = '9.99.9-rc.1';
     inputs['node-version'] = versionSpec;
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => '');
     await main.run();
@@ -241,6 +247,7 @@ describe('setup-node', () => {
     inputs['node-version'] = versionSpec;
     inputs['always-auth'] = false;
     inputs['token'] = 'faketoken';
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => '');
     findAllVersionsSpy.mockImplementation(() => []);
@@ -270,6 +277,7 @@ describe('setup-node', () => {
       inputs['architecture'] = arch;
       inputs['always-auth'] = false;
       inputs['token'] = 'faketoken';
+      inputs['resolve-stable'] = 'false';
 
       const expectedUrl = `https://nodejs.org/download/rc/v${version}/node-v${version}-${platform}-${arch}.${fileExtension}`;
 
@@ -329,6 +337,7 @@ describe('setup-node', () => {
         cacheSpy.mockImplementation(async () => toolPath);
 
         inputs['node-version'] = input;
+        inputs['resolve-stable'] = 'false';
         os['arch'] = 'x64';
         os['platform'] = 'linux';
         // act
@@ -365,6 +374,7 @@ describe('setup-node', () => {
         ]);
 
         inputs['node-version'] = input;
+        inputs['resolve-stable'] = 'false';
         os['arch'] = 'x64';
         os['platform'] = 'linux';
 
@@ -388,6 +398,7 @@ describe('setup-node', () => {
       exSpy.mockImplementation(async () => '/some/other/temp/path');
 
       inputs['node-version'] = versionSpec;
+      inputs['resolve-stable'] = 'false';
       os['arch'] = 'x64';
       os['platform'] = 'linux';
       // act
