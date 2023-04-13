@@ -73417,6 +73417,62 @@ class BaseDistribution {
             return response.result || [];
         });
     }
+    stableNodeVersionsList(list) {
+        const stableVersions = list
+            .filter(item => semver_1.default.major(item.version) % 2 === 0)
+            .map(item => item.version);
+        const versionsSorted = semver_1.default.sort(stableVersions).reverse();
+        return versionsSorted;
+    }
+    // Experimental
+    getTotalLatestNodeVersion() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const nodejsVersionObjectList = yield this.getNodeJsVersions();
+            const versions = nodejsVersionObjectList.map(item => item.version);
+            const sortedVersionsDesc = semver_1.default.sort(versions).reverse();
+            return sortedVersionsDesc[0];
+        });
+    }
+    determineStableNodeVersion(providedNodeVersion) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const versionsDataList = yield this.getNodeJsVersions();
+            const versionsList = this.stableNodeVersionsList(versionsDataList);
+            if (semver_1.default.major(providedNodeVersion) % 2 === 0) {
+                const highestCurrent = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion)}.x.x`);
+                core.info(`Switching to the latest stable major version... (${highestCurrent})`);
+                return highestCurrent;
+            }
+            else {
+                const searchedVersion = semver_1.default.maxSatisfying(versionsList, `^${semver_1.default.major(providedNodeVersion) + 1}.x.x`);
+                core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
+                return searchedVersion;
+            }
+        });
+    }
+    resolveStableVersionOfNode(providedNodeVersion) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const versionsDataList = yield this.getNodeJsVersions();
+            const lowestStableBoundary = '10.24.1';
+            const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0];
+            const highestTotalNodeVersion = yield this.getTotalLatestNodeVersion();
+            let errorMessage;
+            if (providedNodeVersion) {
+                if (semver_1.default.lt(providedNodeVersion, lowestStableBoundary)) {
+                    errorMessage = `node-version specified is lower than the lowest supported stable version (${lowestStableBoundary}).`;
+                    core.setFailed(errorMessage);
+                }
+                if (semver_1.default.gt(providedNodeVersion, highestStableBoundary) || semver_1.default.gte(providedNodeVersion, highestTotalNodeVersion)) {
+                    errorMessage = `node-version specified is higher than the highest supported stable version (${highestStableBoundary}) or total version (${highestTotalNodeVersion}).`;
+                    core.setFailed(errorMessage);
+                }
+                const version = yield this.determineStableNodeVersion(providedNodeVersion);
+                return version;
+            }
+            errorMessage = 'No Node version provided';
+            core.setFailed(errorMessage);
+            throw new Error(errorMessage);
+        });
+    }
     getNodejsDistInfo(version) {
         const osArch = this.translateArchToDistUrl(this.nodeInfo.arch);
         version = semver_1.default.clean(version) || '';
@@ -73945,7 +74001,7 @@ function run() {
             // Version is optional.  If supplied, install / use from the tool cache
             // If not supplied then task is still used to setup proxy, auth, etc...
             //
-            const version = resolveVersionInput();
+            const version = resolveVersionInput(); // changed const to let as it may change versions later on in an if block
             let arch = core.getInput('architecture');
             const cache = core.getInput('cache');
             // if architecture supplied but node-version is not
@@ -73959,6 +74015,7 @@ function run() {
             if (version) {
                 const token = core.getInput('token');
                 const auth = !token ? undefined : `token ${token}`;
+                const resolveStable = (core.getInput('resolve-stable')).toUpperCase() === 'TRUE';
                 const stable = (core.getInput('stable') || 'true').toUpperCase() === 'TRUE';
                 const checkLatest = (core.getInput('check-latest') || 'false').toUpperCase() === 'TRUE';
                 const nodejsInfo = {
@@ -73968,7 +74025,16 @@ function run() {
                     stable,
                     arch
                 };
-                const nodeDistribution = installer_factory_1.getNodejsDistribution(nodejsInfo);
+                let nodeDistribution = installer_factory_1.getNodejsDistribution(nodejsInfo);
+                if (resolveStable === true) {
+                    const updatedVersion = yield nodeDistribution.resolveStableVersionOfNode(version);
+                    if (updatedVersion) {
+                        nodeDistribution = installer_factory_1.getNodejsDistribution(Object.assign(Object.assign({}, nodejsInfo), { versionSpec: updatedVersion }));
+                    }
+                    else {
+                        core.setFailed('The returned version value is undefined.');
+                    }
+                }
                 yield nodeDistribution.setupNodeJs();
             }
             yield util_1.printEnvDetailsAndSetOutput();

@@ -151,6 +151,7 @@ describe('setup-node', () => {
 
   it('finds version in cache with stable true', async () => {
     inputs['node-version'] = '20-v8-canary';
+    inputs['resolve-stable'] = 'false';
     os['arch'] = 'x64';
     inputs.stable = 'true';
 
@@ -176,6 +177,7 @@ describe('setup-node', () => {
 
   it('finds version in cache and adds it to the path', async () => {
     inputs['node-version'] = '20-v8-canary';
+    inputs['resolve-stable'] = 'false';
     os['arch'] = 'x64';
 
     inSpy.mockImplementation(name => inputs[name]);
@@ -200,6 +202,7 @@ describe('setup-node', () => {
     os.platform = 'linux';
     const errMsg = 'unhandled error message';
     inputs['node-version'] = '20.0.0-v8-canary20221103f7e2421e91';
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => {
       throw new Error(errMsg);
@@ -229,6 +232,7 @@ describe('setup-node', () => {
     inputs['node-version'] = versionSpec;
     inputs['always-auth'] = false;
     inputs['token'] = 'faketoken';
+    inputs['resolve-stable'] = 'false';
 
     // ... but not in the local cache
     findSpy.mockImplementation(() => '');
@@ -259,6 +263,7 @@ describe('setup-node', () => {
 
     const versionSpec = '23.0.0-v8-canary20221103f7e2421e91';
     inputs['node-version'] = versionSpec;
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => '');
     findAllVersionsSpy.mockImplementation(() => [
@@ -285,6 +290,7 @@ describe('setup-node', () => {
     inputs['node-version'] = versionSpec;
     inputs['always-auth'] = false;
     inputs['token'] = 'faketoken';
+    inputs['resolve-stable'] = 'false';
 
     findSpy.mockImplementation(() => '');
     findAllVersionsSpy.mockImplementation(() => [
@@ -326,6 +332,7 @@ describe('setup-node', () => {
       inputs['architecture'] = arch;
       inputs['always-auth'] = false;
       inputs['token'] = 'faketoken';
+      inputs['resolve-stable'] = 'false';
 
       const expectedUrl = `https://nodejs.org/download/v8-canary/v${version}/node-v${version}-${platform}-${arch}.${fileExtension}`;
 
@@ -385,6 +392,7 @@ describe('setup-node', () => {
         cacheSpy.mockImplementation(async () => toolPath);
 
         inputs['node-version'] = input;
+        inputs['resolve-stable'] = 'false';
         os['arch'] = 'x64';
         os['platform'] = 'linux';
         // act
@@ -422,6 +430,7 @@ describe('setup-node', () => {
         ]);
 
         inputs['node-version'] = input;
+        inputs['resolve-stable'] = 'false';
         os['arch'] = 'x64';
         os['platform'] = 'linux';
 
@@ -470,6 +479,7 @@ describe('setup-node', () => {
 
         inputs['node-version'] = input;
         inputs['check-latest'] = 'true';
+        inputs['resolve-stable'] = 'false';
         os['arch'] = 'x64';
         os['platform'] = 'linux';
 
@@ -507,6 +517,7 @@ describe('setup-node', () => {
       inputs['node-version'] = versionSpec;
       inputs['always-auth'] = false;
       inputs['token'] = 'faketoken';
+      inputs['resolve-stable'] = 'false';
 
       os.platform = 'linux';
       os.arch = 'x64';

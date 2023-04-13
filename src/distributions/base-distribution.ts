@@ -99,6 +99,73 @@ export default abstract class BaseDistribution {
     return response.result || [];
   }
 
+  private stableNodeVersionsList(list: INodeVersion[]): string[] {
+    const stableVersions = list
+      .filter(item => semver.major(item.version) % 2 === 0)
+      .map(item => item.version);
+    const versionsSorted = semver.sort(stableVersions).reverse();
+    return versionsSorted;
+  }
+
+  // Experimental
+  private async getTotalLatestNodeVersion(): Promise<string> {
+    const nodejsVersionObjectList = await this.getNodeJsVersions();
+    const versions = nodejsVersionObjectList.map(item => item.version);
+    const sortedVersionsDesc = semver.sort(versions).reverse();
+
+    return sortedVersionsDesc[0];
+  }
+
+  private async determineStableNodeVersion(providedNodeVersion: string): Promise<string | null> {
+      const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
+      const versionsList: string[] = this.stableNodeVersionsList(versionsDataList);
+
+      if (semver.major(providedNodeVersion) % 2 === 0) {
+        const highestCurrent = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)}.x.x`);
+        core.info(`Switching to the latest stable major version... (${highestCurrent})`);    
+
+        return highestCurrent;
+      }
+      else {
+        const searchedVersion = semver.maxSatisfying(versionsList, `^${semver.major(providedNodeVersion)+1}.x.x`);
+        core.info(`Switching to the highest version of the next stable release... (${searchedVersion})`);
+      
+        return searchedVersion;
+      }
+  }
+
+
+  async resolveStableVersionOfNode(providedNodeVersion: string): Promise<string | null> {
+    const versionsDataList: INodeVersion[] = await this.getNodeJsVersions();
+    const lowestStableBoundary = '10.24.1';
+    const highestStableBoundary = this.stableNodeVersionsList(versionsDataList)[0];
+    const highestTotalNodeVersion = await this.getTotalLatestNodeVersion();
+    let errorMessage: string;
+
+    if (providedNodeVersion) {
+    
+      if (semver.lt(providedNodeVersion, lowestStableBoundary)) {
+        errorMessage = `node-version specified is lower than the lowest supported stable version (${lowestStableBoundary}).`;
+        core.setFailed(errorMessage);
+      }
+  
+      if (semver.gt(providedNodeVersion, highestStableBoundary) || semver.gte(providedNodeVersion, highestTotalNodeVersion)) {
+        errorMessage = `node-version specified is higher than the highest supported stable version (${highestStableBoundary}) or total version (${highestTotalNodeVersion}).`;
+        core.setFailed(errorMessage);
+      }
+  
+      const version = await this.determineStableNodeVersion(providedNodeVersion);
+      return version;
+
+    }
+
+    errorMessage = 'No Node version provided';
+
+    core.setFailed(errorMessage);
+    throw new Error(errorMessage);
+  
+  }
+
   protected getNodejsDistInfo(version: string) {
     const osArch: string = this.translateArchToDistUrl(this.nodeInfo.arch);
     version = semver.clean(version) || '';
