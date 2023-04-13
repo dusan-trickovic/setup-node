@@ -15,16 +15,15 @@ on:
 jobs:
   resolve-stable-test:
     runs-on: self-hosted
-    # strategy:
-    #   fail-fast: false
-    #   matrix:
-    #     os: [ubuntu-latest, windows-latest, macos-latest]
-    #     node-version: [15.0.0, 16.0.0, 16.8.1, 17.9.1, 18.15.0]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [15.0.0, 16.0.0, 16.8.1, 17.9.1, 18.15.0]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Node
         uses: ./
         with:
-          node-version: 16.0.0
           check-latest: true
           resolve-stable: true
