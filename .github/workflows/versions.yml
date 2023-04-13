@@ -14,7 +14,7 @@ on:
 
 jobs:
   resolve-stable-test:
-    runs-on: ${{ matrix.os }}
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
@@ -25,6 +25,6 @@ jobs:
       - name: Setup Node
         uses: ./
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 16.0.0
           check-latest: true
           resolve-stable: true
