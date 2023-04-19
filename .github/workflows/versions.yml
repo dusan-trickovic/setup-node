@@ -12,7 +12,7 @@ on:
       - '**.md'
 
 jobs:
-  local-cache:
+  silent-failure-issue:
     runs-on: [self-hosted, linux]
     # strategy:
     #   fail-fast: false
