@@ -29,7 +29,6 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           always-auth: false
           check-latest: false
-          node-version: v16.19.1
 
         # run: sudo apt install zstd
           # node-version: ${{ matrix.node-version }}
