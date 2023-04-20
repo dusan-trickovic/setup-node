@@ -20,6 +20,9 @@ jobs:
     #     os: [ubuntu-latest, windows-latest, macos-latest]
     #     node-version: [12, 14, 16]
     steps:
+      - name: Install default version
+        run: ~/.nvm install 16.19.1
+
       - uses: actions/checkout@v3
       - name: Setup Node
         uses: ./
@@ -29,6 +32,9 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           always-auth: false
           check-latest: false
+        env:
+          NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN}
+          
       - name: "Check Version"
         run: node --version
 
