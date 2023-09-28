@@ -72387,7 +72387,7 @@ function run() {
                 const cacheDependencyPath = core.getInput('cache-dependency-path');
                 yield cache_restore_1.restoreCache(cache, cacheDependencyPath);
             }
-            const matchersPath = path.join(__dirname, '../..', '.github');
+            const matchersPath = path.join(__dirname, '..', '.github');
             core.info(`##[add-matcher]${path.join(matchersPath, 'tsc.json')}`);
             core.info(`##[add-matcher]${path.join(matchersPath, 'eslint-stylish.json')}`);
             core.info(`##[add-matcher]${path.join(matchersPath, 'eslint-compact.json')}`);
