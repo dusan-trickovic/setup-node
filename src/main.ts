@@ -66,7 +66,7 @@ export async function run() {
       await restoreCache(cache, cacheDependencyPath);
     }
 
-    const matchersPath = path.join(__dirname, '..', '.github');
+    const matchersPath = path.join(__dirname, '../..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'tsc.json')}`);
     core.info(
       `##[add-matcher]${path.join(matchersPath, 'eslint-stylish.json')}`
